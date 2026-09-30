@@ -30,7 +30,7 @@ venv/bin/python src/pharness.py agent 8000 60        # 25 public games, 8000 act
 | Local notebook run (offline path, 300→2500 actions) | 0.555, 17 levels, 938 s, 321 MB |
 | Mock-gateway rerun path (competition mode, REST) | scorecard open → 25 games → close OK; 0.554 at 600 actions |
 | Kaggle commit run (v1) | COMPLETE, 0.555 (identical to local), 1033 s |
-| Kaggle submission | 56704680, submitted 2026-09-30 10:23 UTC — score pending |
+| Kaggle submission | 56704680, submitted 2026-09-30 10:23 UTC — **public LB 0.24** |
 
 Ablations (3-seed means): without avatar model 0.680; with it 0.696; + hidden-state/undo/memory fixes 0.702.
 Honest expectation: LLM-harness entries score ~10–22 locally and ~3–7 on the LB; this CPU agent is far
