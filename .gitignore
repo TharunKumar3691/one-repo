@@ -1,3 +1,4 @@
 .kaggle/
 kaggle.json
 *.zip
+dist/
