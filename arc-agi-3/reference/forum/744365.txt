@@ -1,0 +1,56 @@
+Topic #744365: Hill-climbing on the LB happens in groups?
+  Author: Nick Pellegrin
+  Posted: 2026-09-29 15:26:40.877000
+  Votes: 3  Comments: 19
+
+I've noticed this phenomenon a few times in several kaggle competitions before, where the Leaderboard stagnates for a while until one team suddenly finds an unlock and jumps up in score, which is then closely followed by a handlful of other teams making huge gains as well. It makes sense that over the course of a competition, the top scores act like a stepwise function for every new unlock, but it's always stood out to me how the jumps seem to happen for a group of teams all at once.🤣
+
+I'm not suggesting there is any secretive sharing of solutions behind the scenes, my guess is that seeing a top team jump up proves that further improvements are possible and motivates other teams to crack down and surpass. Watching the race up to Milestone #2 has been wild, it seems like every 5 hours there's another huge jump. I remember being excited to finally start hitting above 4%… 
+
+What do you guys think? Is there some game-theory explanation that a handful of teams seem to discover a big improvement around the same time, or just lucky coincidence? I just find it really fascinating to watch.
+
+Comments:
+├─ Serguei Makarov (2026-09-29 20:07:47.053000) [+3]
+│  The answer is probably simpler than it looks 🙂 Nobody needs a secret group chat, the leaderboard itself is the leak. When a top team jumps, it tells everyone else two things: there is a real ceilin...
+├─ Doruk Doğrular (2026-09-29 23:26:49) [+-2]
+│  it is about scoring, imo. every week, it is getting 1 times better: it was x20 actions, it was x10 actions 5-4-3-2: now x1.5(assuming all levels passed and with similar action counts). So, a jump f...
+  ├─ Antoni Jankowski (2026-09-30 08:02:10.373000) [+1]
+  │  do u know basic math (?) 1 times better means it stays the same
+    ├─ Doruk Doğrular (2026-09-30 08:05:47.017000) [+0]
+    │  -1 less times
+├─ Van-Phuc Huynh (2026-09-29 15:51:08.743000) [+1]
+│  Look, you have an answer! It is certainly very difficult to achieve that kind of progress with #8.
+│  
+│  Yes.
+  ├─ ktyser (2026-09-29 17:21:02.193000) [+1]
+  │  Wow Tufa managed to get their latest run to go almost 10 hours.
+    ├─ Nick Pellegrin (2026-09-29 18:10:55.860000) [+1]
+    │  I think that might just be from the compute-time obfuscation. I know a lot of competitions will arbitrarily modify the compute time a little bit to prevent probing of the private test set (ie. you ...
+    ├─ Russell Kirk (2026-09-29 18:25:59.897000) [+0]
+    │  It looks like it's definitely that(+/- 1 hour), their previous one was almost an hour shorter 9-22 according to that.  Also, I don't think there's a logical argument for any prominent team to cheat...
+    ├─ CPMP (2026-09-29 20:05:03.683000) [+2]
+    │  this includes queuing.
+  ├─ CPMP (2026-09-29 20:32:19.823000) [+0]
+  │  What about 8th team? You saw a pattern? 😅
+├─ Grigoriy Zatravkin (2026-09-29 16:09:45.693000) [+2]
+│  I think that there are some sort of stepwise function in the competition per design. As soon as your agent starts understand level 2 of the game, its very likely its going to be able to solve level...
+  ├─ Kriztian Rubin (2026-09-29 21:09:55.230000) [+0]
+  │  Fascinating!!
+├─ Son Pham (2026-09-29 15:50:48.943000) [+2]
+│  I have two theories behind it:
+│  
+│  
+│  
+│  Opus 5.5 update spreads the knowledge and efficiency to everyone. In fact, if competitors are all using OpenAI or Anthropic to prompt to oblivion to get the insigh...
+  ├─ Russell Kirk (2026-09-29 16:01:01.403000) [+0]
+  │  I just want to speculate also -- perhaps distilling from QwenMax into a smaller Qwen model? I have to imagine at least one person has done that. But I'm inclined to guess that because it's somethin...
+    ├─ Ritwika Kancharla (2026-09-29 16:22:44.290000) [+1]
+    │  Obviously the leaders have massive amounts of compute available, we cannot compete with them.
+    ├─ Scott Le Grand (2026-09-29 17:01:39.650000) [+0]
+    │  It makes sense to distill from within the same model family to minimize figurative impedance mismatch, but I would also guess one can further distill from repeated sampling runs of public games and...
+    ├─ Russell Kirk (2026-09-29 17:07:35.783000) [+0]
+    │  Yea, but it's a big economic risk to do it earlier than later (if you're compute poor).  Like if they release Qwen4-27b before the competition ends (or something like it from another family).
+├─ Akagha Chimgozirim (2026-09-29 21:02:56.140000) [+0]
+│  My first guess is 'Information.' just like the massive climb when Qwen3.8 was released, I think the top teams are getting info (or have gotten info) on some latest releases, fixes and optimization ...
+├─ xz (2026-09-29 16:03:26.297000) [+0]
+│  We are being pulled toward the singularity.

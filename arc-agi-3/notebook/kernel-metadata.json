@@ -1,0 +1,15 @@
+{
+  "id": "tharunkumar369/arc-agi-3-symbolic-graph-explorer",
+  "title": "ARC-AGI-3 Symbolic Graph Explorer",
+  "code_file": "arc-agi-3-symbolic-explorer.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": true,
+  "enable_gpu": false,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "dataset_sources": [],
+  "competition_sources": ["arc-prize-2026-arc-agi-3"],
+  "kernel_sources": [],
+  "model_sources": []
+}

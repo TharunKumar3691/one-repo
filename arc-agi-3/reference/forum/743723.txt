@@ -1,0 +1,42 @@
+Topic #743723: Harness or model? Notes from a week of controlled harness experiments
+  Author: Serguei Makarov
+  Posted: 2026-09-26 15:35:45.947000
+  Votes: 6  Comments: 9
+
+Setting. Over the past week we ran a series of controlled experiments on a public Duck-based harness. The model, the serving stack and the time budget stayed fixed. Each change was added as a single isolated layer and compared against the same baseline on the public games. We deliberately avoided stacking changes: when several layers ship together, a gain from one can hide a loss from another, and the combined result says little about either.
+
+Measurement.The first result concerns the metric itself. Repeated runs of an identical build produce a wide spread of scores. The per-game outcome is close to bimodal: a game is either understood early or yields almost nothing. A single lucky or unlucky game can therefore move the aggregate noticeably. As a consequence, one run resolves only large effects. Reliable comparison requires the mean of several baseline runs, and many single-run "improvements" fall within the noise. We also found it useful to read the verdict on all games together and separately on the subset of games whose outcome is most stable. A change that only moves the volatile games is much harder to trust.
+
+Harness layers. Almost every added layer scored at or below the baseline: consensus between sampled answers, a reasoning-discipline block, higher-resolution board images, and an executable world model with replay validation and search-based planning. Before reading any score, we checked that each layer had actually been active: its markers in the logs, and its traces in the model's tool calls. This step turned out to matter. The world-model scaffold is the clearest example: the model largely ignored it, so that run measured the presence of an unused instruction rather than the method. Offline, the model rarely produced a simulator that predicted unseen transitions better than a trivial "nothing changes" baseline. The comparison against that trivial baseline was important too: several simulators that looked exact on the observed transitions were no better than it on new ones.
+
+Where runs fail.The most informative analysis compared stuck runs with successful runs of the same game. Replaying recorded runs on the local engine makes it possible to align them state by state. Both pass through the same states and diverge within the first few moves of a level. At most of these forks, the stuck run had already tried the action type that later proved decisive. The failure is therefore neither memory nor coverage of the action space. It is a judgement about the goal, formed early and then defended. Signals visible to the harness (repeated actions, stalled levels, move counts) predict this failure poorly at the moment it happens; they become clear only much later, when most of the budget is already spent. The same pattern has been described elsewhere on this forum as a "lottery effect."
+
+Interpretation. A failure of early goal judgement sits inside the model rather than around it. Prompting and scaffolding change how the model spends its budget, but they barely change which hypothesis it commits to first. Once the harness is reasonably tuned, the remaining lever appears to be the model itself, or training that improves this judgement without memorizing particular games.
+
+Limitations. All experiments used a single model and a single harness family, so the conclusions may not carry over to setups with a different model or a very different agent design. Public games are a small sample, and the relationship between public and hidden performance is itself noisy. Finally, "the layer did not help" here means "did not help beyond the noise in this configuration". It does not mean the underlying idea cannot work elsewhere.
+
+Comments:
+├─ Serguei Makarov (2026-09-27 17:16:34.883000) [+1]
+│  A short follow-up with two numbers behind the claims in the post, since a few people asked how large the effects actually are.
+│  
+│  Noise. Two runs of an identical build, one right after the other on t...
+├─ Scott Le Grand (2026-09-26 15:39:33.627000) [+4]
+│  Funny, I just released my harness for many of the same reasons as this study. And yes, solutions happen rapidly. But I failed to find any discriminant that can truncate or reset a solver on the way...
+  ├─ Serguei Makarov (2026-09-26 16:11:56.283000) [+1]
+  │  Thank you, Scott. This is very generous, and the write-up inside the notebook is as useful as the code itself. Each fix comes with the defect it targets and how it was measured, which is exactly wh...
+  ├─ Penguin (2026-09-26 19:03:37.053000) [+0]
+  │  i guess im just insanely unlucky, check my selfplay logs, i made some changes in the harness, got this:  
+  │  but havent been able to score even above 4 with this submission
+  │  
+  │  (also thank you for sharin...
+    ├─ Ruslan Guseynov (2026-09-26 20:01:13.223000) [+1]
+    │  I think FT09 and a few other simple games might be outliers. I’d also suggest doing more runs.
+    ├─ Scott Le Grand (2026-09-26 20:32:46.233000) [+1]
+    │  That and sb26. But 10 to 15 on the public is about what I'd expect from this notebook. That translates to three to five on the hidden. You should be able to hit at least 40 levels on the public and...
+    ├─ Penguin (2026-09-27 03:27:34.590000) [+0]
+    │  I have something around 60+ versions each with small changes in the harness, nothing have worked yet
+    │  and the gpu time is the biggest constraint
+    ├─ Scott Le Grand (2026-09-27 14:10:06.877000) [+1]
+    │  Very similar to my experience but occasionally something worked. I have a single RTX Pro 6000 and it's not enough to train the fp4-flash model that I suspect is being fine tuned for the gains, but ...
+    ├─ Serguei Makarov (2026-09-27 14:22:59.437000) [+1]
+    │  Same here: dozens of small harness variants, and most of the signal drowns in run-to-run noise. One thing that has helped us with the GPU-time constraint is RunPod. It isn't free, but an RTX PRO 60...

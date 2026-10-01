@@ -1,0 +1,179 @@
+Topic #717133: Tufa Labs’ Winning Solution for ARC-AGI-3 Milestone 1
+  Author: InfiniteCreativity
+  Posted: 2026-07-01 14:47:58.064000
+  Votes: 71  Comments: 18
+
+Authors (alphabetical order): Harold Bessis, Jeroen Cottaar, Isaiah Pressman, Dries Smit, Michal Tešnar, and Stefano Viel.
+
+This technical write-up describes our winning solution for the first milestone prize in the ARC-AGI-3 Kaggle competition. We present the Duck, the successor to Stochastic Goose authored by Dries Smit, which won the ARC-AGI-3 agent preview competition. Our solution consists of an inference harness leveraging Qwen 3.6 27B FP8 as its base model and takes heavy inspiration from the RGB Agent and Symbolica solutions. The harness uses a Python tool to interact with a game and continuously evicts past messages from its context to keep playing indefinitely. We make the code freely available on GitHub. Disclaimer: the code was developed with the help of coding assistants.
+
+We discuss our solution and compare it to other approaches in our blog post, and showcase is in an episode of Machine Learning Street Talk. We discuss the progress on the benchmark in more depth in another episode of MLST.
+
+Alongside this write-up, we are publishing the notebook corresponding to our best submission score of 1.21% on the Kaggle leaderboard and 1.6% on the public train set, respectively. This submission initially scored 1.30%, but that result was retracted by Kaggle, leaving 1.21% as the official leaderboard score (result here). We observed a large variance in scores for the same submission, our best submission got scores as low as 0.77% on Kaggle and on the public games we observe standard deviations of up to 0.4. Our notebooks represent only the infrastructure and metrics; the agent code is attached as a dataset.
+
+We release this harness with the hope of lowering the barrier to entry and inspire innovation from the community. Next, we will present the harness design, explain how the agent behaves, and show results on the public train set. 
+
+
+  
+📝 The text in this post is fully human written, but figures are produced with coding assistance. Refer to the submissions notebook and the repository as the ground truth.
+
+
+Design Principles
+
+We are developing under the constraints of the Kaggle competition, which provides a RTX Pro 6000 GPU with 96 GB of VRAM and 9 hours of runtime to play 110 games in any order. Therefore, we aim for:
+
+
+
+open-source models that fit the VRAM constraint, mainly Qwen 3.6 27B FP8;
+
+generic ARC-AGI-3 problem solving: we do not directly encode any information about the training games into the harness to make it generalize over all games;
+
+a lightweight harness, that still attempts to utilize the underlying model's capabilities as much as possible. This keeps the model in the driver seat, while future-proofing our solution to be applicable when stronger models arrive eventually.
+
+
+Related Works
+
+Our solution takes inspiration from previously published works. Symbolica’s solution, called ARCgentica, achieved a score of 36% the day after the release of the public official games. It was developed for frontier models and uses an orchestration system, which allows the model to call itself recursively — similar to Recursive Language Models, — to solve a game and execute a limited number of actions in each sub-agent. This solution shows that the models are naturally good at problem solving using code, similar to the CodeAct method.
+
+Alternatively to an ARC-AGI-3-specific harness, one could wrap a generic coding harness around the model. This is what the RGB Agent does using OpenCode. Their solution was the first to show near-human action efficiency on the 3 preview games. The full game history is stored in one log file, which the agent then uses via grep, file reads, or executing Python commands. This allows the agent to first analyze observations, generate hypotheses, and then queue up a limited number of actions; a pattern that limits wasteful moves.
+
+Our harness builds on these ideas, where the agent interacts with the game state and history using a Python Read-Eval-Print Loop (REPL).
+
+Harness Architecture
+
+The Duck harness exposes the game to the agent as Python variables and allows the agent to interact with these variables in whichever way it prefers, letting it lean on its pre-trained patterns:
+
+
+
+All game observations are encoded as Python variables;
+
+The agent can interact with these variables using the Python tool, call pre-built helper functions, and take actions in the environment;
+
+The actions are executed in the ARC-AGI-3 environment, which then updates the Python sandbox with new variables;
+
+The LLM freely iterates between reasoning, tool use, and taking actions, until the game is solved or times out;
+
+Whenever we reach the maximum context length, we evict the oldest non-system-prompt context to enable the model to play indefinitely;
+
+We also leverage Qwen 3's multimodal image input to allow the model to directly observe the latest frame. To inspect specific parts of a frame, it can process the ASCII grid or use a segmentation tool.
+
+
+
+
+In the subsequent paragraphs, we explain the harness design in more detail, provide additional documentation of how the game is exposed to the LLM, and explain how we construct the agent context. We also discuss the LLM perception, both using pre-built tools and the model’s image input, and provide a short summary of the harness performance on the official public games.
+
+Implementation Details
+
+Python Interface
+
+The game state is exposed to the LLM as Python variables inside a REPL environment, which includes a few standard libraries. The agent interacts with the environment by calling a python tool, which allows for code execution up to a maximum time limit of 30 seconds and maximum output size of 4096 characters. This allows the agent to produce code to inspect the grid, search for action sequences that achieve a specific goal, and take actions directly, as shown below. The REPL environment is reset between every toolcall. This gives the model flexibility to combine action execution with environment observation.
+
+
+
+
+
+
+
+
+
+  
+⚠️ The REPL is not fully isolated. Running this harness can lead to arbitrary code execution. Run the code at your own risk.
+
+
+Pre-loaded Variables
+
+The REPL is pre-loaded with variables, which represent the state of the environment. The variable current_frame stores the latest board state and exposes the attribute .ascii, which provides the game board in ASCII code, along with other variables such as the current level and step. Additionally, .segmentation provides segmentation of the board into connected components (discussed in detail later). Similarly, previous_frame stores the previous game frame. The history variable lets the model inspect its previous moves by pairing .action and .frame. Additionally, transitions list exposes state-action-state. Each action produces a result object, which stores variables about the game state, like the number of previous actions, current level, reward, state, which actions are valid, and so on. As the model usually needs to learn about the most immediate state of the game, we provide it the latest variables last_transition, last_action, and last_action_result.
+
+Actions
+
+The model is informed about the possible actions through the valid_actions variable. It can execute one or multiple of actions using the action function. This gives it the ability to execute actions programmatically, e.g., in the loop or while tracking an object. The actions are given natural names (UP, DOWN, LEFT, RIGHT, SPACE, MOUSE and RESET). The UNDO action is not provided to the model as the model fails to use it efficiently: it undoes big batches of actions that wastes energy.
+
+World Model
+
+We prompt the agent to produce a simple world model using a note that is carried over multiple turns. This helps it form and store important facts it learns over turns and levels. It can use tags like World model: in its response, which enables it to copy important notes into the next user message, until it decides to overwrite it. This helps the model keep a mental note of what it is trying to achieve.
+
+Context Construction
+
+We always include the full system prompt in the context. The assistant generates a response per turn, which usually consists of some reasoning and a python tool call that is executed inside the REPL. If actions are executed inside the REPL, a new user message is appended to the context, including the updated information about the game state, e.g., level transitions, valid actions, and whether a level reset occured. We cap the agent's maximum context to 64k tokens to allow the agent to act over longer timespans with reasonably high token throughput. The harness attempts to maintain an input context of 32k tokens by evicting the oldest user message and subsequent assistant turns, whenever it surpass this limit. We illustrate this in the figure below, where we remove the reasoning blocks to simplify the visualization. We also provide a GitHub repository, which includes a viewer that can be used to inspect the agent context. We currently do not optimally use prefix caching on the vLLM engine.
+
+
+
+System Prompt Construction
+
+The system prompt contains many ARC-3-specific hints that are generally useful over ARC games, without providing game-specific hints. We provide information around the game setup, possible actions, and the general goal of completing as many levels as possible in an action-effecient manner. Additionally, we describe the REPL environment, with all its variables and provide recommendations on how to best leverage them. If multi-modal inputs are used, the model is instructed on how to use them as well, e.g., how to interpret the scene, the existence of a time bar, and that minimizing the bar is not the goal of the game. Finally, the model is also informed about the interface of the Python tool.
+
+User Response Construction
+
+When an action is executed, in addition to the normal REPL response, a new user message is produced. This provides extra context to the model on how the environment has changed. We also repeat the state of the game and what the valid actions are to the agent, as well as a reminder on how it should use the Python tool. Lastly, we also repeat the world model instructions and provide the world model if it was defined; an the model is reminded that it should collect evidence on what happened before acting.
+
+Multimodality &amp; Segmentation
+
+To give the model a basic understanding of the current game state, a 4× upscaled image of the board is injected into its context at the beginning of every turn. Qwen's encoder processes images in 16×16 pixel patches and we found that this upscaling gives the model the best visual understanding of the scene. The model can roughly identify the objects and can perform more detailed analysis using Python code. We also tried injecting more frames or video animations, but we noticed that small models struggle with extracting details and acting on them. This also means that the model does not see animation feedback, which can be crucial, e.g., in official games such as sb26 and tn36.
+
+A common failure mode of the agent is that it tries to print the whole grid directly, which pollutes its context. To help it analyze the structure of the grid, we provide it with a segmentation tool that helps the model locate the 4-connected components in pixel space, denoting adjacency and child-parent relationship between the nodes. This tool significantly helps in games where connected components are meaningful syntactic units. The example below illustrates the segmentation tool on the first frame of ls20.
+
+
+
+Results
+
+The harness was developed for Qwen 3.6 27B FP8, which we deploy using a vLLM server. The harness can also be used with API keys using OpenRouter or OpenAI. To evaluate the harness, we run it on the 25 public games with 20 tries each. We include the result directory on GitHub, so that the outputs can be verified and analyzed. The mean score we achieve is 1.6002 (+/- 0.4475). The heatmap below shows the performance of the model across games and tries with attempts on the x-axis and games on the y-axis. The performance is rather uneven, with some games being solved consistently for over 40% of the levels, while for some not even the first level is solved. The number of attempts that reach a given ARC score is plotted on the right, showing a sharply declining distribution.
+
+
+
+
+
+
+
+
+For a discussion about the performance of frontier models in our Duck harness, please refer to our blog post. The results directory on GitHub also includes an automatically generated diagnostics.html, which visualize and compare the runs in more detail. You can browse this file directly in the shared notebook. 
+
+Discussion
+
+The Duck harness shows how small coding models can be used to solve ARC-AGI-3 games by leaning into the post-trained capabilities of the models. It shows good first signs of life and we expect this approach to scale with better small models and additional post-training. The harness was mainly built by understanding the strengths and weaknesses of various open-source LLMs, while trying to maximize the score we achieve on the public games. However, it has not been scrutinized and ablated over many design decisions. The main driver of improvement throughout our harness development came from better base models and introducing multi-modality. Against our intuition, hand-crafting specific tools for the model did not help, as it seems to hinder the creative abilities of the model.
+
+To enable the agent to perform well, we had to encode a lot of specific knowledge into the prompts. This includes steering its goal setting, e.g., keeping it from treating the energy bar as the objective or inventing nonsensical goals like moving a block to a fixed position. The prompts were also carefully tuned to prevent the model from using incorrect formatting and misinterpretation variables and attributes. The model is steered away from over-interpreting a frame, as it would often hallucinate classical game sprites, like robots, or try to solve it as a classical pixels-based game, such as Atari. The models have a hard time identifying, which features of the environment are interesting, thus they dump full boards into the context that dilutes their attention. Although coding models are great at general reasoning, they need to be extensively adapted to fare well in the domain of games.
+
+We believe the Duck can benefit from many improvements. The context management could be improved by compaction or adding memory to help the model carry curated context across multiple turns. The perception can also be improved, as coding models are not trained to reason over crops of ASCII grids, but rather abstract descriptions. Generally, transmitting abstract visual information in a useful format is a big challenge, however a first step in this direction is the segmentation tool we provide in the Duck harness.
+
+With this, we are inviting the community to collaborate and improve on our work and are looking forward to seeing your contributions!
+
+Comments:
+├─ Vladimir Yakunin (2026-07-11 21:02:49.597000) [+2]
+│  Thank you, this information is useful. Judging by the gradient table, this method is practically independent of the level complexity. The model is either able to find a pattern, or it isn't. To ver...
+├─ Thiago Munhoz da Nóbrega (2026-07-02 18:34:35.490000) [+2]
+│  Just finished reading this and its so cool to see you guys turned the game into code. I didn't think of that! Great write up as always! Thank you for the high effort and quality into this!
+├─ Sean McGee (2026-07-02 11:58:34.997000) [+2]
+│  I think this represents the true spirit of a milestone prize. You are all clearly dedicated to advancing these domains and helping others do the same. Thank you!
+├─ Toussaint (2026-07-02 11:02:24.480000) [+2]
+│  Thank a lot! I really enjoy reading you. I learn a lot from you write up.
+│  Amazing contribution to humanity.
+├─ Avinav Sahoo (2026-07-01 18:24:32.517000) [+-4]
+│  we have scored 9.76 on public train set will submit soon
+  ├─ OverfitOracle (2026-08-22 09:54:04.333000) [+0]
+  │  I think you forgot to submit🤣🤣🤣
+    ├─ FOYSAL (2026-08-23 06:11:11.793000) [+0]
+    │  Agree with you😆
+├─ Ely (2026-08-20 08:36:07.573000) [+0]
+│  We'd like to build on the duck harness per your invitation in the blog post, could you confirm its license or add a LICENSE file to the repo/notebook? The competition rules require third-party comp...
+  ├─ Jeroen Cottaar (2026-08-20 09:05:30.120000) [+1]
+  │  Hey, the licenses are included in the metadata of the kernel and notebook. The notebook is under Apache 2.0 license (the only one possible on Kaggle), the underlying code dataset on MIT license.
+    ├─ Ely (2026-08-20 14:25:10.163000) [+0]
+    │  Thank you for the clarification ! Cheers 😄
+├─ Mustang Liu (2026-07-28 09:35:26.187000) [+0]
+│  Great job! thx～
+├─ parthenos (2026-07-03 17:51:23.627000) [+0]
+│  congrats on the score!!
+│  
+│  have u guys tried integrating this pipeline with claude/gpt5?
+  ├─ Jeroen Cottaar (2026-07-03 21:14:08.700000) [+3]
+  │  Yes, but due to cost we've only done a few games. See here: https://tufalabs.ai/research/duck-harness
+├─ Jakob Brüggen (2026-07-02 05:35:34.740000) [+0]
+│  Thanks for this detailed explanation. It really helps to comprehend your solution and iterate it further.
+├─ [deleted] (2026-07-06 05:48:27.803000) [+0]
+│  [deleted]
+├─ [deleted] (2026-07-06 05:24:45.213000) [+-2]
+│  [deleted]
+├─ [deleted] (2026-07-04 14:33:32.537000) [+-2]
+│  [deleted]
+├─ [deleted] (2026-07-03 21:21:53.677000) [+1]
+│  [deleted]
