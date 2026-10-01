@@ -1,0 +1,159 @@
+Topic #732854: What are your agents scoring on the 25 public games?
+  Author: Reki
+  Posted: 2026-08-04 19:51:47.319000
+  Votes: 15  Comments: 51
+
+Hi all,
+
+I'm curious how everyone's agents are doing on the 25 public demo games, and I think it would help all of us to have a rough community baseline in one place. Local public-game results aren't a perfect leaderboard proxy, but they're still the fastest signal most of us have while iterating.
+
+If you're willing to share, here's a format that would make comparison easy:
+
+Overall: average score across the 25 games (and how many games you score &gt; 0 on)
+Per game: which games you clear, and roughly what score — even a rough "solved / partially solved / zero" breakdown is useful
+Setup: base model, harness style (coding agent in a REPL, orchestrator + subagents, RL, hand-written search, etc.)
+Budget: actions per game and wall-clock/compute per game
+Gap: how your local public-game numbers compare to your leaderboard submission
+
+A few things I'd love to hear discussion on:
+
+Which of the 25 games are the "wall" games that almost nothing clears? Are they hard for a shared reason (long horizons? hidden state? unclear win conditions?), or hard in different ways?
+Are people's scores mostly limited by not beating levels, or by beating them with far more actions than humans? Those point to very different fixes.
+How much variance do you see across repeated runs on the same game with the same agent? I want to know how much of a score delta is signal vs. noise.
+Has anyone found a small subset of the public games that predicts leaderboard performance well? Running all 25 every iteration is expensive.
+
+I'll share my own numbers in the comments to get things started. Thanks!
+
+Comments:
+├─ Giang Rita (2026-09-19 13:27:51.337000) [+4]
+│  15.7 local and 7.37 LB, up until now I do not believe in scores anymore :))
+├─ Nick Pellegrin (2026-09-18 04:45:33.767000) [+2]
+│  Recently:
+│  Public 7.6%   (solving 35 levels total) -&gt; 3.35% Private LB,
+│  Public 10.2% (solving 44 levels total) -&gt; 3.05% Private LB,
+│  Public 7.7%   (solving 37 levels total) -&gt; 4.42% Private ...
+  ├─ Fususu (2026-09-19 17:09:37.603000) [+0]
+  │  I agree. The host should consider allow 5 submissions per day like before there was a time I saw 5 slot, then the host changed it to 1.
+    ├─ ktyser (2026-09-19 20:08:39.613000) [+0]
+    │  I think the reason it is 1 per day is because of the compute limitations but don't know for sure. I remember when the competition first opened they offered H100's but that didn't last long.
+    ├─ Yassine Alouini (2026-09-21 10:53:44.700000) [+0]
+    │  Yes most likely to avoid the excessive costs. I also agree that having one submission makes progress feel slow. For most people, being clever and finding a good local proxy are the ways to make som...
+├─ Ya Xu (2026-09-16 09:22:17.863000) [+1]
+│  started:   2026-09-14 23:08:10
+│  ended:     2026-09-15 01:21:58
+│  duration:  2h 13m 48s
+│  mean score:    9.91
+│  median score:  4.76
+│  
+│  then LB 6.23, I don't know if it's sheer luck.
+│  
+│  The notebook is based on...
+  ├─ Fususu (2026-09-16 10:07:16.477000) [+0]
+  │  It's mere luck. Today public I got 22.26, submit -&gt; LB got 5.37 :( Another day I got 17.34, submit -&gt; LB got 6.91 :)))
+    ├─ Ya Xu (2026-09-16 10:26:07.713000) [+0]
+    │  It's mere luck. Today public I got 22.26, submit -&gt; LB got 5.37 :( Another day I got 17.34, submit -&gt; LB got 6.91 :)))
+    │  
+    │  
+    │  I've noticed that my local-lb alignment is significantly different fro...
+    ├─ Fususu (2026-09-16 10:54:22.103000) [+0]
+    │  I don't know, but I feel the more I mess with the harness, the messy it becomes :))
+    ├─ Scott Le Grand (2026-09-19 12:44:22.647000) [+0]
+    │  As of today, the highest I've hit locally without fine tuning the model is 11.04, 12.97 with (behavioral cloning not spoonfed solutions and you have to use reasoning traces from the same model or i...
+    ├─ Giang Rita (2026-09-19 13:26:23.503000) [+0]
+    │  How do you fine-tune? Qwen 3.8 is so big.
+├─ Fususu (2026-09-16 10:05:58.650000) [+2]
+│  Anyone can explain?
+│  Today public I got 22.26, submit -&gt; LB got 5.37 :(
+│  Another day I got 17.34, submit -&gt; LB got 6.91 :)))
+  ├─ Ritwika Kancharla (2026-09-20 11:25:30.903000) [+0]
+  │  the leaderboard problems are completely unseen so doing well on the public problems does not guarantee a high score on the hidden games.
+    ├─ Scott Le Grand (2026-09-20 15:56:44.357000) [+0]
+    │  It's worse than that. They are both unseen and you have to choose two of your seen hidden scores to guess which ones scored the best on the unseen hidden scores that determine the winner. How is th...
+    ├─ CPMP (2026-09-20 17:32:41.957000) [+6]
+    │  you have to choose two of your seen hidden scores to guess which ones scored the best on the unseen hidden scores that determine the winner. How is that a good idea?
+    │  
+    │  
+    │  It is THE GOOD IDEA of Kaggle...
+    ├─ rellik13 (2026-09-20 19:14:39.963000) [+0]
+    │  It is a good idea tho, isnt it basically the core of this competition? To see how well we can make a model can generalize on unseen tasks, given limited resources? And anyways, competitions like th...
+    ├─ Scott Le Grand (2026-09-27 17:41:42.693000) [+1]
+    │  How is this better than revealing the winner on the last day by revealing the hidden scores on the hidden half?
+    │  
+    │  Given the huge variance of submissions, the highest scoring submission on the truly ...
+    ├─ 斬る (2026-09-28 03:01:45.640000) [+0]
+    │  I understand your point, but having participants choose the two submissions they believe will perform best on the hidden test set is itself part of the challenge. Of course, it would be even better...
+    ├─ CPMP (2026-09-28 11:53:57.483000) [+3]
+    │  @scottlegrand , 
+    │  
+    │  the difficulty you have is what ML engineers face all the time. They have to train models so that they will fare well on new data. Without having access to this new data, by defin...
+├─ Fususu (2026-09-10 00:43:52.510000) [+4]
+│  runs:      25 (won: 2)
+│  started:   2026-09-08 20:49:42
+│  ended:     2026-09-08 23:07:44
+│  duration:  2h 18m 2s
+│  mean score:    17.34
+│  median score:  8.33
+│  Then 5.19 on LB ^^
+├─ CreateAMind (2026-09-08 00:54:14.127000) [+2]
+│  score  12.4
+├─ Penguin (2026-09-03 17:47:24.793000) [+1]
+│  Havent been able to make any progress on bp35, would love some suggestions
+  ├─ Van-Phuc Huynh (2026-09-03 18:17:01.347000) [+2]
+  │  I can got Mean 16.x
+    ├─ Penguin (2026-09-03 21:22:51.130000) [+0]
+    │  can u share ur offline play score that shows per game score, like the one above?
+    ├─ Van-Phuc Huynh (2026-09-09 20:06:07.487000) [+1]
+    │  My agent can actually reach 24.x, with a median score around 16.x. However, there are still a few things I need to improve before I can properly showcase it on the leaderboard, so I can’t share too...
+    ├─ Fususu (2026-09-16 10:09:05.707000) [+0]
+    │  Did you try submit that 24.x??? Me 22.x, got 5.37 on LB while 17.x got 6.91 :))
+    ├─ Van-Phuc Huynh (2026-09-16 11:35:43.657000) [+0]
+    │  No, I haven’t submitted my best notebook yet. I think there are still a few issues that need to be fixed. I’ll submit it in the final days if the other options don’t turn out to be viable.
+    ├─ Giang Rita (2026-09-17 10:39:20.620000) [+0]
+    │  I'm very curious about 24.x, and wonder how much point it will convert to LB.
+├─ Nick Pellegrin (2026-08-27 19:52:31.327000) [+1]
+│  I'm getting around 5.0-5.4 on public and 1.4-1.8 on LB.
+├─ mikelou1 (2026-08-26 11:03:10.900000) [+1]
+│  Got 2.8 on 25 games and 2.4 on lb
+  ├─ Yassine Alouini (2026-09-21 11:33:25.440000) [+0]
+  │  that's a good validation/LB gap, good for you!
+├─ daoviet (2026-08-26 01:40:10.080000) [+1]
+│  I got 6.8 locally, then 1.19 public 🥲
+  ├─ Seth Moudry (2026-08-27 19:43:15.510000) [+0]
+  │  might be noise
+├─ Fususu (2026-08-24 12:12:14.673000) [+1]
+│  3.8 local, then 0.9-1.8 LB ^^!
+├─ Son Pham (2026-08-11 03:31:13.133000) [+2]
+│  Got 2.8 locally so far
+  ├─ Giang Rita (2026-09-17 10:44:19.793000) [+0]
+  │  how about now?
+├─ @s3werst (2026-09-09 19:58:50.247000) [+0]
+│  11.95 locally, 3.99 public 😭, but for only 3 days of work this is p good tho, since i just leave fable doing whatever it wants and me only checking up on it every hour or so
+├─ donk666 (2026-08-27 01:43:47.030000) [+0]
+│  between 3.5-7.5
+├─ PRASHANT SHUKLA91 (2026-08-19 08:38:43.753000) [+0]
+│  Anyone who broke the bottlenecks of won games: 0/25 so far.
+  ├─ Scott Le Grand (2026-08-19 13:23:22.243000) [+0]
+  │  I had an alternative approach based on using Claude Fable to build game-specific solvers that solved 7 of the 25 public games and hit ~38% RHAE overall at 116/183 levels. That really worked, but it...
+  ├─ Scott Le Grand (2026-09-09 14:00:09.540000) [+1]
+  │  So yesterday I hit 11.04 on the public games with a win of ft09. Yay me I guess. So I submitted it last night with great hope…
+  │  
+  │  Sadly, 2.71. WTFF? This was based entirely on game-independent harnes...
+├─ Reki (2026-08-04 19:53:10.640000) [+0]
+  ├─ Scott Le Grand (2026-08-18 22:05:29.303000) [+0]
+  │  My highest is 3.8, but the same agent submitted gets 0.9 or so. It's a general LLM agent descended from duck.
+├─ [deleted] (2026-08-20 15:49:19.210000) [+1]
+│  [deleted]
+  ├─ OverfitOracle (2026-08-20 16:51:43.520000) [+1]
+  │  Our harness looks stable at 5.0+ on 25 games and 1.6 on the 110 games after submission
+    ├─ Spen (2026-08-27 18:15:24.257000) [+0]
+    │  Did you make any fundamental changes to your harness to jump to your current score, or just tweaks and a good scoring run?
+    ├─ [deleted] (2026-08-27 18:19:08.727000) [+0]
+    │  [deleted]
+    ├─ OverfitOracle (2026-08-27 18:20:21.437000) [+0]
+    │  I am not gonna share something very important but was a very different  approach in the harness + model achieving 5.0+ stable on public 25 games. We completely redesigned it leading to a good stabl...
+    ├─ Scott Le Grand (2026-09-17 18:33:15.440000) [+0]
+    │  I've scored as high as 12 on the public games. The best I have seen is 3.2 on the hidden. I am beginning to think the only path forward is a winning recipe for SFT/RL on an existing model. And beca...
+    ├─ Ya Xu (2026-09-18 04:31:50.540000) [+0]
+    │  I've scored as high as 12 on the public games. The best I have seen is 3.2 on the hidden. I am beginning to think the only path forward is a winning recipe for SFT/RL on an existing model. And beca...
+    ├─ OverfitOracle (2026-09-20 06:01:57.023000) [+1]
+    │  RL is possible for the qwen 3.8 27b after high quantization (still need good compute) but on the flash next model its impossible unless you are an nvidia guy😂

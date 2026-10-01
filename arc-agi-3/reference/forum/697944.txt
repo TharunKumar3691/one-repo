@@ -1,0 +1,35 @@
+Topic #697944: Update on Code Requirements
+  Author: María Cruz
+  Posted: 2026-05-07 22:16:59.523000
+  Votes: 11  Comments: 7
+
+Hi all, 
+Given the change in accelerators from H100s to RTX 6000, and because we want to make sure your models still have ample resource headroom to run successfully on the new hardware, we have adjusted the code requirements and extended the maximum notebook runtime. It has increased from 6 hours to 9 hours. I noted this on the Overview tab, in the section Code requirements. 
+
+Thank you everyone for your patience as we worked through this challenge. 
+
+Happy modeling, and good luck!
+
+María
+
+Comments:
+├─ Tanaka Ai24 (2026-09-08 08:13:05.607000) [+2]
+│  @macruzbar Dear Hosts,
+│  Thank you for the public competition.
+│  However for the past week th queue for the running any notebook using the RTX 6000 is taking painfully long time in queues. Since or is ...
+├─ CPMP (2026-05-09 22:31:35.740000) [+3]
+│  Hi, H100 still appears as a choice when I create a new notebook. Is that expected?
+├─ parthenos (2026-05-08 05:55:05.430000) [+2]
+│  [hypothetical question] what would happen if i select a notebook which was submitted using H100 for my final submission at the end of the deadline? will it automatically reverted to RTX6000 or will...
+  ├─ CPMP (2026-09-10 09:45:20.483000) [+2]
+  │  There are no rerun at end of competition. Your final score is already computed but will stay hidden till end of competition.
+  │  
+  │  There are 100 game sin test data. 55 are used to compute the score show...
+├─ PG's AI (2026-08-31 07:43:57.347000) [+0]
+│  HI @macruzbar 
+│  
+│  I have one question , i want to install the latest transformer 5.14 lib , but since internet is not enabaled for rtx6000 , I cannot add in add ons as well , Cloud you please suggest...
+  ├─ Penguin (2026-08-31 19:50:53.367000) [+0]
+  │  Create a wheels dataset and upload it as input?
+├─ [deleted] (2026-05-10 05:24:20.173000) [+0]
+│  [deleted]

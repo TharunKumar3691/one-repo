@@ -1,0 +1,26 @@
+Topic #742477: About ACTION 7.
+  Author: Van-Phuc Huynh
+  Posted: 2026-09-22 08:07:54.335000
+  Votes: 4  Comments: 4
+
+What exactly is ACTION7?
+
+The ARC-AGI-3 overview describes it as UNDO, but most agents forked from Duck seem to encounter an index error when they query or try to use this action.
+
+Should we actually keep ACTION7 enabled and treat it as UNDO, or would it be safer to remove/disable it? Is there any evidence that ACTION7 has another role or behavior beyond simply undoing the previous action?
+
+Comments:
+├─ Muurur (2026-09-22 11:55:10.193000) [+1]
+│  In the Public games it does not, but reading the documentation it seems to indicate that it can do more than undo.
+│  
+│  "ACTION7    Additional simple action"
+│  
+│  The issue is that at least from observable...
+  ├─ Van-Phuc Huynh (2026-09-22 15:29:19.040000) [+1]
+  │  According to the official documentation at https://docs.arcprize.org/actions, ACTION7 is described as a “Simple undo action.”
+    ├─ Muurur (2026-09-22 20:23:09.680000) [+1]
+    │  Good catch thank you then my change is maybe really helpful. And this should either be named "UNDO" or alternatively completely removed
+├─ Mark Barney (2026-09-30 04:21:26.860000) [+0]
+│  Ahh yes ACTION7 😀 if you force yourself to play these games as a human, you’ll see that if it is available it is quite handy on a few games. If it were available on others it would break them. 
+│  
+│  Ye...
